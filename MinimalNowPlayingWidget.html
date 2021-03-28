@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<!-- This is a widget for OBS that has been designed to accept track info from Preztel Rocks or MusicBee(requires plugin),
+in the form of textfiles(JSON,txt). -->
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet'>
+    <title>Now Playing</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <script>
+        let newSong,
+            newArtist,
+            imgpath,
+            preztelPlaying = false,
+            array = [],
+            shown = false;
+        function hideText() {
+            $("#song").animate(
+                {
+                    marginLeft: "-100px",
+                    opacity: 0,
+                },
+                300
+            );
+            $("#song2").animate(
+                {
+                    marginLeft: "-100px",
+                    opacity: 0,
+                },
+                300
+            );
+            document.getElementById("song").classList.remove("scrolling");
+            document.getElementById("song2").classList.remove("scrolling");
+        }
+
+        function updateText() {
+            document.getElementById("song").innerHTML = newSong + newArtist;
+            document.getElementById("song2").innerHTML = newSong + newArtist;
+        }
+
+        function showText() {
+            var width = Number.parseInt(getComputedStyle(document.getElementById("bigdiv"), null).getPropertyValue('width'));
+            var imageSize = Number.parseInt(getComputedStyle(document.getElementById("image"), null).getPropertyValue('width'));
+            var overflowWidth = Number.parseInt(width - imageSize - 4);
+            //console.log("overflowWidth: " + overflowWidth);
+            var temp = "-" + (document.getElementById("song").clientWidth + 6) + "px";
+            var time = Number.parseFloat((document.getElementById("song").clientWidth - overflowWidth + 8) / 2) + "s";
+            document.documentElement.style.setProperty('--offset', temp);
+            document.documentElement.style.setProperty('--offsetvelocity', time);
+            //console.log(time);
+            if (document.getElementById("song").clientWidth > overflowWidth) {
+                document.documentElement.style.setProperty('--dsp', "block");
+                $("#song").animate(
+                    {
+                        marginLeft: "290px",
+                        opacity: 1,
+                    },
+                    300,
+                    function () {
+                        //console.log("lngsong");
+                        $("#song").css("margin-left", "6px");
+                    }
+                );
+            } else {
+                document.documentElement.style.setProperty('--dsp', "none");
+                $("#song").animate(
+                    {
+                        marginLeft: "6px",
+                        opacity: 1,
+                    },
+                    300
+                );
+            }
+
+            if (document.getElementById("song2").clientWidth > overflowWidth) {
+                $("#song2").animate(
+                    {
+                        marginLeft: "290px",
+                        opacity: 1,
+                    },
+                    300,
+                    function () {
+                        console.log("lngsong");
+                        $("#song2").css("margin-left", "6px");
+                    }
+                );
+            } else {
+                $("#song2").animate(
+                    {
+                        marginLeft: "6px",
+                        opacity: 1,
+                    },
+                    300
+                );
+            }
+
+            if (document.getElementById("song").clientWidth > overflowWidth)
+                setTimeout(function () {
+                    document.getElementById("song").classList.add("scrolling");
+                }, 300);
+            //console.log(document.getElementById("song").clientWidth);
+            if (document.getElementById("song2").clientWidth > overflowWidth)
+                setTimeout(function () {
+                    document.getElementById("song2").classList.add("scrolling");
+                }, 300);
+        }
+
+        function checkUpdate() {
+            $.getJSON("nowplaying.json", function (data) {
+                preztelPlaying = data.player.playing;
+                if (preztelPlaying) {
+                    newArtist = " | " + data.track.artistsString.replace(/&/g, "&amp;");
+                    newSong = "|| " + data.track.title.replace(/&/g, "&amp;");
+                    imgpath = "album.jpg?t=" + newSong + newArtist;
+                } else {
+                    $.get("Tags.txt", function (data) {
+                        array = data.split('~');
+                        if (array.length < 3) {
+                            //console.log("hi");
+                            newSong = "|| Not ";
+                            newArtist = " | Playing :(";
+                            imgpath = "pause.png?t=" + newSong + newArtist;
+                        }
+                        else {
+                            //console.log(array);
+                            newSong = "|| " + array[0];
+                            newArtist = " | " + array[1];
+                            imgpath = "CoverArtwork.jpg?t=" + newSong + newArtist;
+                        }
+                    });
+                }
+            }).then(displayData);
+            setTimeout(checkUpdate, 1000);
+        }
+
+        function displayData() {
+            var oldString = newSong + newArtist;
+            if (oldString != document.getElementById("song").innerHTML) {
+                if (newSong.length > 1 && !shown) {
+                    $("#bigdiv").animate(
+                        {
+                            marginLeft: "0px",
+                        },
+                        500
+                    );
+                    shown = true;
+                }
+                if (newSong.length < 1 && shown) {
+                    $("#bigdiv").animate(
+                        {
+                            marginLeft: "-500px",
+                        },
+                        500
+                    );
+                    shown = false;
+                }
+                //console.log("New song, old song: " + document.getElementById("song").innerHTML + " new song: " + newSong);
+                hideText();
+                setTimeout(updateText, 300);
+                setTimeout(showText, 400);
+                document.getElementById("image").setAttribute("src", imgpath);
+                $("#image2").fadeOut(500, function () {
+                    document.getElementById("image2").setAttribute("src", imgpath);
+                    $("#image2").show();
+                });
+            }
+        }
+
+        $(document).ready(checkUpdate);
+    </script>
+</head>
+
+<body>
+    <div id="bigdiv">
+        <img id="image" />
+        <img id="image2" src="placeholder.png" />
+        <div id="smalldiv">
+            <div id="song"></div>
+            <div id="song2"></div>
+        </div>
+    </div>
+</body>
+
+</html>

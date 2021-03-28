@@ -1,0 +1,95 @@
+:root {
+    --width: 200px;
+    --height: 42px;
+    --nheight: -42px;
+    --fontsize: 10px;
+    --imagesize: 36px;
+    --image2pos: -40px;
+    --offset: 0px;
+    --offsetvelocity: 0s;
+    --dsp: none;
+}
+
+#bigdiv {
+    justify-content: flex-start;
+    background: rgba(0, 4, 255, 0);
+    width: var(--width);
+    height: var(--height);
+    overflow: show;
+    margin-left: -10px;
+    padding: 0px;
+}
+
+#smalldiv {
+    height: var(--height);
+    overflow: hidden;
+    margin-top: var(--nheight);
+    margin-left: var(--imagesize);
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+#image {
+    width: var(--imagesize);
+    height: var(--imagesize);
+    padding: 0;
+    position: relative;
+    z-index: 5;
+    alt: "Avatar";
+    border-radius: 15%;
+    margin-top: 3px;
+    margin-left: 3px;
+}
+
+#image2 {
+    width: var(--imagesize);
+    height: var(--imagesize);
+    padding: 0;
+    position: relative;
+    margin-left: var(--image2pos);
+    z-index: 10;
+    alt: "Avatar";
+    border-radius: 15%;
+}
+
+body {
+    background-color: #ffffff;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+#song {
+    color: hsl(19, 100%, 50%);
+    font-size: var(--fontsize);
+    font-family: "Orbitron";
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0px;
+    display: block;
+}
+
+#song2 {
+    color: hsl(19, 100%, 50%);
+    font-size: var(--fontsize);
+    font-family: "Orbitron";
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0px;
+    display: var(--dsp);
+}
+
+.scrolling {
+    animation: slide var(--offsetvelocity) linear infinite;
+    animation-delay: 1s;
+}
+
+@keyframes slide {
+    0% {
+        transform: translateX(0%);
+    }
+
+    100% {
+        transform: translateX(var(--offset));
+    }
+}
